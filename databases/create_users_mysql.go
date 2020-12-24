@@ -25,7 +25,6 @@ func CreateUsersTable() {
 	sqlDB.LogMode(true)
 
 	sqlDB, err := gorm.Open("mysql", "root:password@tcp(127.0.0.1:3306)/test")
-
 	if err != nil {
 		log.Panic(err)
 	}
