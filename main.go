@@ -28,8 +28,6 @@ func createNewUser(w http.ResponseWriter, r *http.Request) {
 
 	var user User
 	json.Unmarshal(reqBody, &user)
-	// update our global Articles array to include
-	// our new Article
 	Users = append(Users, user)
 
 	json.NewEncoder(w).Encode(user)
@@ -56,20 +54,34 @@ func returnAllUsers(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(Users)
 }
 
-func homePage(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, "Welcome to the HomePage!")
-	fmt.Println("Endpoint Hit: homePage")
+func deleteUser(w http.ResponseWriter, r *http.Request) {
+
+	vars := mux.Vars(r)
+	key := vars["id"]
+
+	i, err := strconv.Atoi(key)
+	if err != nil {
+		log.Panic(err)
+	}
+
+	for index, user := range Users {
+		if user.ID == i {
+			Users = append(Users[:index], Users[index+1:]...)
+		}
+	}
+
+	json.NewEncoder(w).Encode(Users)
+
 }
 
 func handleRequests() {
 	// creates a new instance of a mux router
 	myRouter := mux.NewRouter().StrictSlash(true)
 
-	myRouter.HandleFunc("/", homePage)
 	myRouter.HandleFunc("/users", returnAllUsers)
 	myRouter.HandleFunc("/user/{id}", returnSingleUser)
 	myRouter.HandleFunc("/user", createNewUser).Methods("POST")
-	myRouter.HandleFunc("/user/{id}", createNewUser).Methods("DELETE")
+	myRouter.HandleFunc("/user/{id}", deleteUser).Methods("DELETE")
 	log.Fatal(http.ListenAndServe(":10000", myRouter))
 }
 
